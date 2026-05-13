@@ -1,0 +1,4 @@
+$data remove storage gm:storage GUI[{GUI_ID:$(GUI_ID)}].PAGES[{PAGE:$(PAGE)}].PAGE_CONTENTS[{Slot:$(Slot)b}].components."minecraft:custom_data".gui.execute
+$data modify storage gm:storage GUI[{GUI_ID:$(GUI_ID)}].PAGES[{PAGE:$(PAGE)}].PAGE_CONTENTS[{Slot:$(Slot)b}].components."minecraft:custom_data".gui.execute set value {"command": "$(command)", "item_modifier":"$(item_modifier)", "function": "$(function)",sound:"$(sound)", change_menu:{GUI_ID:$(change_to_guiid),PAGE:$(change_to_page)}}
+
+data remove storage gm:storage inputs.editGUI
