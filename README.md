@@ -1,7 +1,6 @@
 # GUI Maker Fabric (1.21.1)
 
 Java-only Fabric conversion of the original GUI Maker datapack:
-- Source datapack: https://github.com/officialbarden/guimaker
 - Target: Minecraft 1.21.1 + Fabric
 - No internal `mcfunction` usage
 - Multiplayer-safe persistent server state
