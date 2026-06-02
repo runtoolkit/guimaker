@@ -34,6 +34,15 @@ public final class GuiItemUtil {
         stack.set(DataComponentTypes.CUSTOM_NAME, Text.literal(name));
     }
 
+    public static NbtCompound writeItemStack(ItemStack stack, RegistryWrapper.WrapperLookup registries) {
+        if (stack == null || stack.isEmpty()) {
+            return new NbtCompound();
+        }
+
+        NbtElement encoded = stack.encodeAllowEmpty(registries);
+        return encoded instanceof NbtCompound compound ? compound : new NbtCompound();
+    }
+
     public static List<ItemStack> readItemStackList(NbtCompound parent, String key, RegistryWrapper.WrapperLookup registries) {
         List<ItemStack> result = new ArrayList<>();
         if (!parent.contains(key, NbtElement.LIST_TYPE)) {
@@ -52,7 +61,7 @@ public final class GuiItemUtil {
         NbtList list = new NbtList();
         for (ItemStack stack : stacks) {
             if (!stack.isEmpty()) {
-                list.add(stack.toNbtAllowEmpty(registries));
+                list.add(writeItemStack(stack, registries));
             }
         }
         return list;

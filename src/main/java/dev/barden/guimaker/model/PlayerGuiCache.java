@@ -1,12 +1,10 @@
 package dev.barden.guimaker.model;
 
+import dev.barden.guimaker.util.GuiItemUtil;
 import java.util.HashMap;
 import java.util.Map;
-
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.registry.RegistryWrapper;
 
 public final class PlayerGuiCache {
@@ -37,7 +35,7 @@ public final class PlayerGuiCache {
         NbtCompound nbt = new NbtCompound();
         NbtCompound holders = new NbtCompound();
         for (Map.Entry<String, ItemStack> entry : this.holderStacks.entrySet()) {
-            holders.put(entry.getKey(), entry.getValue().toNbtAllowEmpty(registries));
+            holders.put(entry.getKey(), GuiItemUtil.writeItemStack(entry.getValue(), registries));
         }
         nbt.put("holders", holders);
 

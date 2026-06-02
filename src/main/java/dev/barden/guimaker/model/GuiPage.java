@@ -1,5 +1,6 @@
 package dev.barden.guimaker.model;
 
+import dev.barden.guimaker.util.GuiItemUtil;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -79,7 +80,7 @@ public final class GuiPage {
         this.slots.values().stream().sorted(Comparator.comparingInt(GuiSlotDefinition::slot)).forEach(slot -> {
             ItemStack stack = slot.exportBaseItem(registries);
             if (!stack.isEmpty()) {
-                NbtCompound itemNbt = stack.toNbtAllowEmpty(registries);
+                NbtCompound itemNbt = GuiItemUtil.writeItemStack(stack, registries);
                 itemNbt.putByte("Slot", (byte) slot.slot());
                 contents.add(itemNbt);
             }

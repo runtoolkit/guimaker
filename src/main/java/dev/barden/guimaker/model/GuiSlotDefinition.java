@@ -192,10 +192,10 @@ public final class GuiSlotDefinition {
         nbt.putInt("slot", this.slot);
         nbt.putString("type", this.type.name());
         nbt.putBoolean("cached", this.cached);
-        nbt.put("icon", this.iconStack.toNbtAllowEmpty(registries));
+        nbt.put("icon", GuiItemUtil.writeItemStack(this.iconStack, registries));
         nbt.put("action", this.action.toNbt());
         if (!this.uncachedHolderStack.isEmpty()) {
-            nbt.put("holder", this.uncachedHolderStack.toNbtAllowEmpty(registries));
+            nbt.put("holder", GuiItemUtil.writeItemStack(this.uncachedHolderStack, registries));
         }
         if (!this.toggleStacks.isEmpty()) {
             nbt.put("toggle_stacks", GuiItemUtil.writeItemStackList(this.toggleStacks, registries));
