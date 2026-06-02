@@ -1,1 +1,0 @@
-function gm:zprivate/dialog/edit_gui/page/item_config/apply_macro_init

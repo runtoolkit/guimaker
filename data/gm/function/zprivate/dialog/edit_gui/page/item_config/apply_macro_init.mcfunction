@@ -1,1 +1,0 @@
-function gm:zprivate/edit/btn_info/1 with storage gm:storage inputs.editGUI
