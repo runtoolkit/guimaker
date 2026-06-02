@@ -1,10 +1,12 @@
 package dev.barden.guimaker.command;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -50,6 +52,18 @@ public final class GuiMakerCommands {
     }
 
     private static LiteralArgumentBuilder<ServerCommandSource> root() {
+        var pageArgument = CommandManager.argument("page", IntegerArgumentType.integer(1))
+            .executes(context -> open(context, IntegerArgumentType.getInteger(context, "page")));
+
+        var guiIdArgument = CommandManager.argument("guiId", IntegerArgumentType.integer(1))
+            .executes(context -> open(context, 1));
+        guiIdArgument.then(pageArgument);
+
+        var targetsArgument = CommandManager.argument("targets", EntityArgumentType.players());
+        targetsArgument.then(guiIdArgument);
+
+        var openBranch = CommandManager.literal("open").then(targetsArgument);
+
         return CommandManager.literal("guimaker")
             .requires(source -> source.hasPermissionLevel(2))
             .then(CommandManager.literal("items").executes(GuiMakerCommands::giveItems))
@@ -58,11 +72,7 @@ public final class GuiMakerCommands {
             .then(slotBranch())
             .then(exportBranch())
             .then(CommandManager.literal("import").executes(GuiMakerCommands::importHeld))
-            .then(CommandManager.literal("open")
-                .then(CommandManager.argument("targets", EntityArgumentType.players())
-                    .then(CommandManager.argument("guiId", IntegerArgumentType.integer(1))
-                        .executes(context -> open(context, 1))
-                        .then(CommandManager.argument("page", IntegerArgumentType.integer(1)).executes(context -> open(context, IntegerArgumentType.getInteger(context, "page"))))))));
+            .then(openBranch);
     }
 
     private static LiteralArgumentBuilder<ServerCommandSource> profileBranch() {
@@ -91,60 +101,24 @@ public final class GuiMakerCommands {
     }
 
     private static LiteralArgumentBuilder<ServerCommandSource> slotBranch() {
-        return CommandManager.literal("slot")
-            .then(CommandManager.literal("icon")
-                .then(CommandManager.argument("guiId", IntegerArgumentType.integer(1))
-                    .then(CommandManager.argument("page", IntegerArgumentType.integer(1))
-                        .then(CommandManager.argument("slot", IntegerArgumentType.integer(0, 53)).executes(GuiMakerCommands::setSlotIcon)))))
-            .then(CommandManager.literal("type")
-                .then(CommandManager.argument("guiId", IntegerArgumentType.integer(1))
-                    .then(CommandManager.argument("page", IntegerArgumentType.integer(1))
-                        .then(CommandManager.argument("slot", IntegerArgumentType.integer(0, 53))
-                            .then(CommandManager.argument("type", StringArgumentType.word()).executes(GuiMakerCommands::setSlotType))))))
-            .then(CommandManager.literal("cached")
-                .then(CommandManager.argument("guiId", IntegerArgumentType.integer(1))
-                    .then(CommandManager.argument("page", IntegerArgumentType.integer(1))
-                        .then(CommandManager.argument("slot", IntegerArgumentType.integer(0, 53))
-                            .then(CommandManager.argument("value", BoolArgumentType.bool()).executes(GuiMakerCommands::setSlotCached))))))
-            .then(CommandManager.literal("togglelist")
-                .then(CommandManager.argument("guiId", IntegerArgumentType.integer(1))
-                    .then(CommandManager.argument("page", IntegerArgumentType.integer(1))
-                        .then(CommandManager.argument("slot", IntegerArgumentType.integer(0, 53)).executes(GuiMakerCommands::setToggleListFromContainer)))))
-            .then(CommandManager.literal("clear")
-                .then(CommandManager.argument("guiId", IntegerArgumentType.integer(1))
-                    .then(CommandManager.argument("page", IntegerArgumentType.integer(1))
-                        .then(CommandManager.argument("slot", IntegerArgumentType.integer(0, 53)).executes(GuiMakerCommands::clearSlot)))))
-            .then(CommandManager.literal("action")
-                .then(CommandManager.literal("clear")
-                    .then(CommandManager.argument("guiId", IntegerArgumentType.integer(1))
-                        .then(CommandManager.argument("page", IntegerArgumentType.integer(1))
-                            .then(CommandManager.argument("slot", IntegerArgumentType.integer(0, 53)).executes(GuiMakerCommands::clearAction)))))
-                .then(CommandManager.literal("command")
-                    .then(CommandManager.argument("guiId", IntegerArgumentType.integer(1))
-                        .then(CommandManager.argument("page", IntegerArgumentType.integer(1))
-                            .then(CommandManager.argument("slot", IntegerArgumentType.integer(0, 53))
-                                .then(CommandManager.argument("command", StringArgumentType.greedyString()).executes(GuiMakerCommands::setActionCommand))))))
-                .then(CommandManager.literal("function")
-                    .then(CommandManager.argument("guiId", IntegerArgumentType.integer(1))
-                        .then(CommandManager.argument("page", IntegerArgumentType.integer(1))
-                            .then(CommandManager.argument("slot", IntegerArgumentType.integer(0, 53))
-                                .then(CommandManager.argument("callback", IdentifierArgumentType.identifier()).executes(GuiMakerCommands::setActionFunction))))))
-                .then(CommandManager.literal("itemmodifier")
-                    .then(CommandManager.argument("guiId", IntegerArgumentType.integer(1))
-                        .then(CommandManager.argument("page", IntegerArgumentType.integer(1))
-                            .then(CommandManager.argument("slot", IntegerArgumentType.integer(0, 53))
-                                .then(CommandManager.argument("modifier", IdentifierArgumentType.identifier()).executes(GuiMakerCommands::setActionItemModifier))))))
-                .then(CommandManager.literal("sound")
-                    .then(CommandManager.argument("guiId", IntegerArgumentType.integer(1))
-                        .then(CommandManager.argument("page", IntegerArgumentType.integer(1))
-                            .then(CommandManager.argument("slot", IntegerArgumentType.integer(0, 53))
-                                .then(CommandManager.argument("sound", IdentifierArgumentType.identifier()).executes(GuiMakerCommands::setActionSound))))))
-                .then(CommandManager.literal("changemenu")
-                    .then(CommandManager.argument("guiId", IntegerArgumentType.integer(1))
-                        .then(CommandManager.argument("page", IntegerArgumentType.integer(1))
-                            .then(CommandManager.argument("slot", IntegerArgumentType.integer(0, 53))
-                                .then(CommandManager.argument("targetGuiId", IntegerArgumentType.integer(1))
-                                    .then(CommandManager.argument("targetPage", IntegerArgumentType.integer(1)).executes(GuiMakerCommands::setActionChangeMenu))))))));
+        var slotBranch = CommandManager.literal("slot");
+
+        slotBranch.then(CommandManager.literal("icon").then(slotTarget(GuiMakerCommands::setSlotIcon)));
+        slotBranch.then(CommandManager.literal("type").then(slotTargetWithExtra("type", StringArgumentType.word(), GuiMakerCommands::setSlotType)));
+        slotBranch.then(CommandManager.literal("cached").then(slotTargetWithExtra("value", BoolArgumentType.bool(), GuiMakerCommands::setSlotCached)));
+        slotBranch.then(CommandManager.literal("togglelist").then(slotTarget(GuiMakerCommands::setToggleListFromContainer)));
+        slotBranch.then(CommandManager.literal("clear").then(slotTarget(GuiMakerCommands::clearSlot)));
+
+        var actionBranch = CommandManager.literal("action");
+        actionBranch.then(CommandManager.literal("clear").then(slotTarget(GuiMakerCommands::clearAction)));
+        actionBranch.then(CommandManager.literal("command").then(slotTargetWithExtra("command", StringArgumentType.greedyString(), GuiMakerCommands::setActionCommand)));
+        actionBranch.then(CommandManager.literal("function").then(slotTargetWithExtra("callback", IdentifierArgumentType.identifier(), GuiMakerCommands::setActionFunction)));
+        actionBranch.then(CommandManager.literal("itemmodifier").then(slotTargetWithExtra("modifier", IdentifierArgumentType.identifier(), GuiMakerCommands::setActionItemModifier)));
+        actionBranch.then(CommandManager.literal("sound").then(slotTargetWithExtra("sound", IdentifierArgumentType.identifier(), GuiMakerCommands::setActionSound)));
+        actionBranch.then(CommandManager.literal("changemenu").then(slotTargetWithChangeMenu()));
+
+        slotBranch.then(actionBranch);
+        return slotBranch;
     }
 
     private static LiteralArgumentBuilder<ServerCommandSource> exportBranch() {
@@ -152,6 +126,27 @@ public final class GuiMakerCommands {
             .then(CommandManager.argument("guiId", IntegerArgumentType.integer(1))
                 .executes(context -> export(context, requiredPlayer(context.getSource())))
                 .then(CommandManager.argument("targets", EntityArgumentType.players()).executes(context -> export(context, EntityArgumentType.getPlayers(context, "targets")))));
+    }
+
+    private static RequiredArgumentBuilder<ServerCommandSource, Integer> slotTarget(Command<ServerCommandSource> command) {
+        return CommandManager.argument("guiId", IntegerArgumentType.integer(1))
+            .then(CommandManager.argument("page", IntegerArgumentType.integer(1))
+                .then(CommandManager.argument("slot", IntegerArgumentType.integer(0, 53)).executes(command)));
+    }
+
+    private static <T> RequiredArgumentBuilder<ServerCommandSource, Integer> slotTargetWithExtra(String extraName, ArgumentType<T> extraType, Command<ServerCommandSource> command) {
+        return CommandManager.argument("guiId", IntegerArgumentType.integer(1))
+            .then(CommandManager.argument("page", IntegerArgumentType.integer(1))
+                .then(CommandManager.argument("slot", IntegerArgumentType.integer(0, 53))
+                    .then(CommandManager.argument(extraName, extraType).executes(command))));
+    }
+
+    private static RequiredArgumentBuilder<ServerCommandSource, Integer> slotTargetWithChangeMenu() {
+        return CommandManager.argument("guiId", IntegerArgumentType.integer(1))
+            .then(CommandManager.argument("page", IntegerArgumentType.integer(1))
+                .then(CommandManager.argument("slot", IntegerArgumentType.integer(0, 53))
+                    .then(CommandManager.argument("targetGuiId", IntegerArgumentType.integer(1))
+                        .then(CommandManager.argument("targetPage", IntegerArgumentType.integer(1)).executes(GuiMakerCommands::setActionChangeMenu)))));
     }
 
     private static int giveItems(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
